@@ -10,6 +10,7 @@ var gLevel = {
 
 var gGame
 var gBoard
+var gIsFirstClick
 
 function onInit() {
     gGame = {
@@ -18,10 +19,9 @@ function onInit() {
         markedCount: 0,
         secsPassed: 0,
     }
+    gIsFirstClick = true
 
     gBoard = buildBoard()
-    // placeMinesRandomly(gBoard)
-    setMinesNegsCount(gBoard)
     renderBoard(gBoard)
 }
 
@@ -38,10 +38,6 @@ function buildBoard() {
             }
         }
     }
-
-    board[1][1].isMine = true
-    board[3][0].isMine = true
-
     return board
 }
 
@@ -89,6 +85,7 @@ function countMinesNegs(board, rowIdx, colIdx) {
 function onCellClicked(elCell, i, j) {
     const clickedCell = gBoard[i][j]
     if (!gGame.isOn || clickedCell.isShown || clickedCell.isMarked) return
+    if (gIsFirstClick) handleFirstClick(i, j)
 
     handleClickedCell(elCell, clickedCell, i, j)
     if (checkGameOver()) gGame.isOn = false
@@ -107,6 +104,12 @@ function handleClickedCell(elCell, clickedCell, i, j) {
     }
 
     elCell.classList.add('shown')
+}
+
+function handleFirstClick(rowIdx, colIdx) {
+    gIsFirstClick = false
+    placeMinesRandomly(gBoard, rowIdx, colIdx)
+    setMinesNegsCount(gBoard)
 }
 
 function onCellMarked(ev, elCell, i, j) {
@@ -168,18 +171,19 @@ function revealMines() {
     }
 }
 
-function placeMinesRandomly(board) {
+function placeMinesRandomly(board, rowIdx, colIdx) {
     for (var i = 0; i < gLevel.MINES; i++) {
-        const randCell = findEmptyCell(board)
+        const randCell = findEmptyCell(board, rowIdx, colIdx)
         board[randCell.i][randCell.j].isMine = true
     }
 }
 
-function findEmptyCell(board) {
+function findEmptyCell(board, rowIdx, colIdx) {
     var emptyCells = []
 
     for (var i = 0; i < board.length; i++) {
         for (var j = 0; j < board[0].length; j++) {
+            if (i === rowIdx && j === colIdx) continue
             if (!board[i][j].isMine) emptyCells.push({ i, j })
         }
     }

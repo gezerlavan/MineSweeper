@@ -18,6 +18,7 @@ function onInit() {
         showCount: 0,
         markedCount: 0,
         secsPassed: 0,
+        lifeCount: 1,
     }
     gIsFirstClick = true
 
@@ -93,17 +94,32 @@ function onCellClicked(elCell, i, j) {
 
 function handleClickedCell(elCell, clickedCell, i, j) {
     if (!clickedCell.isMine) {
-        clickedCell.isShown = true
-        gGame.showCount++
-        elCell.innerText = clickedCell.minesAroundCount || ''
-        if (clickedCell.minesAroundCount === 0) expandShown(gBoard, i, j)
+        handleSafeClick(elCell, clickedCell, i, j)
+    } else {
+        handleMineClick(elCell)
+    }
+    elCell.classList.add('shown')
+}
+
+function handleSafeClick(elCell, clickedCell, i, j) {
+    clickedCell.isShown = true
+    gGame.showCount++
+    elCell.innerText = clickedCell.minesAroundCount || ''
+    if (clickedCell.minesAroundCount === 0) expandShown(gBoard, i, j)
+}
+
+function handleMineClick(elCell) {
+    if (gGame.lifeCount > 0) {
+        gGame.lifeCount--
+        setTimeout(() => {
+            elCell.innerText = ''
+            elCell.classList.remove('shown')
+        }, 1000)
     } else {
         gGame.isOn = false
-        elCell.innerText = MINE
         revealMines()
     }
-
-    elCell.classList.add('shown')
+    elCell.innerText = MINE
 }
 
 function handleFirstClick(rowIdx, colIdx) {

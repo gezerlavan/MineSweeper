@@ -1,0 +1,49 @@
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+
+header,
+footer {
+    min-height: 5vh;
+    line-height: 5vh;
+    text-align: center;
+
+    background-color: lightcoral;
+}
+
+main {
+    min-height: calc(100vh - 10vh - 1rem);
+}
+
+table {
+    margin-inline: auto;
+    margin-block-start: 1rem;
+    background-color: #cc9277;
+    border-collapse: collapse;
+}
+
+table > * {
+    text-align: center;
+}
+
+td {
+    width: 40px;
+    height: 40px;
+    border: 1px solid black;
+}
+
+td.shown {
+    background-color: oldlace;
+}
+
+.btn-container {
+    text-align: center;
+    margin-block-start: 1em;
+}

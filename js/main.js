@@ -6,6 +6,7 @@ const FLAG = '🚩'
 var gLevel = {
     SIZE: 4,
     MINES: 2,
+    LIVES: 1,
 }
 
 var gGame
@@ -18,9 +19,9 @@ function onInit() {
         showCount: 0,
         markedCount: 0,
         secsPassed: 0,
-        lifeCount: 1,
     }
     gIsFirstClick = true
+    resetLives(gLevel.SIZE)
 
     gBoard = buildBoard()
     renderBoard(gBoard)
@@ -109,8 +110,8 @@ function handleSafeClick(elCell, clickedCell, i, j) {
 }
 
 function handleMineClick(elCell) {
-    if (gGame.lifeCount > 0) {
-        gGame.lifeCount--
+    if (gLevel.LIVES > 0) {
+        gLevel.LIVES--
         setTimeout(() => {
             elCell.innerText = ''
             elCell.classList.remove('shown')
@@ -205,4 +206,29 @@ function findEmptyCell(board, rowIdx, colIdx) {
     }
     const randIdx = getRandomInt(0, emptyCells.length)
     return emptyCells[randIdx]
+}
+
+function renderLevels() {
+    const levelNames = ['Beginner', 'Medium', 'Expert']
+    var strHTML = ''
+    for (var i = 0; i < levelNames.length; i++) {
+        strHTML += `<button onclick="onSetLevel(${i})">
+                        ${levelNames[i]}
+                    </button>`
+    }
+    document.querySelector('.levels').innerHTML = strHTML
+}
+
+function onSetLevel(level) {
+    const levelConfig = {
+        0: { SIZE: 4, MINES: 2, LIVES: 1 },
+        1: { SIZE: 8, MINES: 14, LIVES: 3 },
+        2: { SIZE: 12, MINES: 32, LIVES: 3 },
+    }
+    gLevel = levelConfig[level] || levelConfig['0']
+    onInit()
+}
+
+function resetLives(size) {
+    gLevel.LIVES = size === 4 ? 1 : 3
 }

@@ -6,10 +6,11 @@
         <link rel="stylesheet" href="css/main.css" />
         <title>MineSweeper</title>
     </head>
-    <body onload="onInit()">
+    <body onload="onInit(); renderLevels()">
         <header>MineSweeper</header>
 
         <main>
+            <div class="levels"></div>
             <table>
                 <tbody class="board"></tbody>
             </table>

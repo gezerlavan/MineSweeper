@@ -37,18 +37,19 @@ td {
     width: 40px;
     height: 40px;
     border: 1px solid black;
+
+    cursor: default;
 }
 
-td.shown {
+td.shown,
+td.shown-hint {
     background-color: oldlace;
 }
 
-.btn-container {
-    text-align: center;
-    margin-block-start: 1em;
-}
-
-.levels {
+.btn-restart-container,
+.levels,
+.hints,
+.mark-count {
     text-align: center;
     margin-block-start: 1em;
 }

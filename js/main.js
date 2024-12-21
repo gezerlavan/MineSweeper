@@ -12,6 +12,7 @@ var gLevel = {
 var gGame
 var gBoard
 var gIsFirstClick
+var gIsHint
 
 function onInit() {
     gGame = {
@@ -19,12 +20,15 @@ function onInit() {
         showCount: 0,
         markedCount: 0,
         secsPassed: 0,
+        hintCount: 3,
     }
     gIsFirstClick = true
     resetLives(gLevel.SIZE)
 
     gBoard = buildBoard()
     renderBoard(gBoard)
+    renderHints()
+    renderMarkCount()
 }
 
 function buildBoard() {
@@ -89,6 +93,11 @@ function onCellClicked(elCell, i, j) {
     if (!gGame.isOn || clickedCell.isShown || clickedCell.isMarked) return
     if (gIsFirstClick) handleFirstClick(i, j)
 
+    if (gIsHint) {
+        console.log('Hi')
+        handleClickedCellHint(i, j)
+        return
+    }
     handleClickedCell(elCell, clickedCell, i, j)
     if (checkGameOver()) gGame.isOn = false
 }
@@ -129,12 +138,29 @@ function handleFirstClick(rowIdx, colIdx) {
     setMinesNegsCount(gBoard)
 }
 
+function handleClickedCellHint(rowIdx, colIdx) {
+    const hintCells = []
+
+    for (var i = rowIdx - 1; i <= rowIdx + 1; i++) {
+        if (i < 0 || i > gBoard.length - 1) continue
+        for (var j = colIdx - 1; j <= colIdx + 1; j++) {
+            if (j < 0 || j > gBoard[0].length - 1) continue
+            const currCell = gBoard[i][j]
+            renderExpandedCells(currCell, i, j, true)
+            hintCells.push({ currCell, i, j })
+        }
+    }
+    hideExpandedCells(hintCells)
+    gIsHint = false
+}
+
 function onCellMarked(ev, elCell, i, j) {
     ev.preventDefault()
     const clickedCell = gBoard[i][j]
     if (!gGame.isOn || clickedCell.isShown) return
 
     handleMarkedCell(elCell, clickedCell)
+    renderMarkCount()
     if (checkGameOver()) gGame.isOn = false
 }
 
@@ -169,10 +195,24 @@ function expandShown(board, rowIdx, colIdx) {
     }
 }
 
-function renderExpandedCells(currCell, i, j) {
+function renderExpandedCells(currCell, i, j, isHint) {
     const elCell = document.querySelector(`[data-pos="${i},${j}"]`)
-    elCell.innerText = currCell.minesAroundCount || ''
-    elCell.classList.add('shown')
+    elCell.innerText = currCell.isMine ? MINE : currCell.minesAroundCount || ''
+    elCell.classList.add(isHint ? 'shown-hint' : 'shown')
+}
+
+function hideExpandedCells(cellsToHide) {
+    setTimeout(() => {
+        for (var i = 0; i < cellsToHide.length; i++) {
+            const elCell = document.querySelector(
+                `[data-pos="${cellsToHide[i].i},${cellsToHide[i].j}"]`
+            )
+            const { isShown, minesAroundCount, isMarked } =
+                cellsToHide[i].currCell
+            elCell.innerText = isShown ? minesAroundCount : isMarked ? FLAG : ''
+            elCell.classList.remove('shown-hint')
+        }
+    }, 1500)
 }
 
 function revealMines() {
@@ -231,4 +271,27 @@ function onSetLevel(level) {
 
 function resetLives(size) {
     gLevel.LIVES = size === 4 ? 1 : 3
+}
+
+function renderHints() {
+    var strHTML = ''
+    for (var i = 0; i < 3; i++) {
+        strHTML += `<button class="btn-hint" 
+                            onclick="onHint(this)">💡</button>`
+    }
+    document.querySelector('.hints').innerHTML = strHTML
+}
+
+function onHint(elBtn) {
+    if (!gGame.hintCount) return
+    gIsHint = true
+    gGame.hintCount--
+    elBtn.innerText = '🔒'
+}
+
+function renderMarkCount() {
+    const markCount = gLevel.MINES - gGame.markedCount
+    document.querySelector('.mark-count span').innerText =
+        markCount < 10 && markCount > 0 ? `0${markCount}` : `${markCount}`
+    // markCount.toString().padStart(2, '0')
 }

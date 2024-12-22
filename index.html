@@ -4,6 +4,7 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <link rel="stylesheet" href="css/main.css" />
+        <link rel="icon" href="bomb.png" type="image/x-icon" />
         <title>MineSweeper</title>
     </head>
     <body onload="onInit(); renderLevels()">
@@ -11,7 +12,10 @@
 
         <main>
             <div class="levels"></div>
-            <div class="hints"></div>
+            <div class="features">
+                <div class="hints"></div>
+                <button onclick="onSafeClick()">Safe click</button>
+            </div>
             <div class="mark-count"><span></span></div>
             <table>
                 <tbody class="board"></tbody>

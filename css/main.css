@@ -48,8 +48,16 @@ td.shown-hint {
 
 .btn-restart-container,
 .levels,
-.hints,
-.mark-count {
+.mark-count,
+.features {
     text-align: center;
     margin-block-start: 1em;
+}
+
+.safe {
+    background-color: palevioletred;
+}
+
+.hints {
+    display: inline-block;
 }

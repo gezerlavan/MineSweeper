@@ -21,6 +21,7 @@ function onInit() {
         markedCount: 0,
         secsPassed: 0,
         hintCount: 3,
+        safeClicks: 3,
     }
     gIsFirstClick = true
     resetLives(gLevel.SIZE)
@@ -41,6 +42,7 @@ function buildBoard() {
                 isShown: false,
                 isMine: false,
                 isMarked: false,
+                isSafe: false,
             }
         }
     }
@@ -94,7 +96,6 @@ function onCellClicked(elCell, i, j) {
     if (gIsFirstClick) handleFirstClick(i, j)
 
     if (gIsHint) {
-        console.log('Hi')
         handleClickedCellHint(i, j)
         return
     }
@@ -189,7 +190,7 @@ function expandShown(board, rowIdx, colIdx) {
                 currCell.isShown = true
                 gGame.showCount++
                 renderExpandedCells(currCell, i, j)
-                if (!currCell.minesAroundCount) expandShown(board, i, j)
+                if (currCell.minesAroundCount === 0) expandShown(board, i, j)
             }
         }
     }
@@ -294,4 +295,39 @@ function renderMarkCount() {
     document.querySelector('.mark-count span').innerText =
         markCount < 10 && markCount > 0 ? `0${markCount}` : `${markCount}`
     // markCount.toString().padStart(2, '0')
+}
+
+function onSafeClick() {
+    if (gIsFirstClick) return alert('You must start the game first!')
+
+    if (gGame.safeClicks === 0) return
+    gGame.safeClicks--
+    const { i, j } = findSafeCell()
+    gBoard[i][j].isSafe = true
+    const elCell = document.querySelector(`[data-pos="${i},${j}"]`)
+    elCell.classList.add('safe')
+
+    setTimeout(() => {
+        elCell.classList.remove('safe')
+    }, 1500)
+}
+
+function findSafeCell() {
+    var safeCells = []
+
+    for (var i = 0; i < gBoard.length; i++) {
+        for (var j = 0; j < gBoard[0].length; j++) {
+            const currCell = gBoard[i][j]
+            if (
+                !currCell.isShown &&
+                !currCell.isMine &&
+                !currCell.isMarked &&
+                !currCell.isSafe
+            ) {
+                safeCells.push({ i, j })
+            }
+        }
+    }
+    const randIdx = getRandomInt(0, safeCells.length)
+    return safeCells[randIdx]
 }

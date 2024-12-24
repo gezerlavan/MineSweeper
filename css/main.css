@@ -46,9 +46,14 @@ td.shown-hint {
     background-color: oldlace;
 }
 
+section.status-panel div {
+    display: inline-block;
+    margin-inline: 60px;
+}
+
 .btn-restart-container,
 .levels,
-.mark-count,
+.status-panel,
 .features {
     text-align: center;
     margin-block-start: 1em;

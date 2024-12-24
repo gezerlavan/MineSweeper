@@ -13,6 +13,7 @@ var gGame
 var gBoard
 var gIsFirstClick
 var gIsHint
+var gTimerInterval
 
 function onInit() {
     gGame = {
@@ -30,6 +31,7 @@ function onInit() {
     renderBoard(gBoard)
     renderHints()
     renderMarkCount()
+    resetTimer(true)
 }
 
 function buildBoard() {
@@ -100,7 +102,7 @@ function onCellClicked(elCell, i, j) {
         return
     }
     handleClickedCell(elCell, clickedCell, i, j)
-    if (checkGameOver()) gGame.isOn = false
+    checkGameOver()
 }
 
 function handleClickedCell(elCell, clickedCell, i, j) {
@@ -129,6 +131,7 @@ function handleMineClick(elCell) {
     } else {
         gGame.isOn = false
         revealMines()
+        resetTimer()
     }
     elCell.innerText = MINE
 }
@@ -137,6 +140,7 @@ function handleFirstClick(rowIdx, colIdx) {
     gIsFirstClick = false
     placeMinesRandomly(gBoard, rowIdx, colIdx)
     setMinesNegsCount(gBoard)
+    startTimer()
 }
 
 function handleClickedCellHint(rowIdx, colIdx) {
@@ -162,7 +166,7 @@ function onCellMarked(ev, elCell, i, j) {
 
     handleMarkedCell(elCell, clickedCell)
     renderMarkCount()
-    if (checkGameOver()) gGame.isOn = false
+    checkGameOver()
 }
 
 function handleMarkedCell(elCell, clickedCell) {
@@ -172,10 +176,14 @@ function handleMarkedCell(elCell, clickedCell) {
 }
 
 function checkGameOver() {
-    return (
+    if (
         gGame.showCount === gBoard.length ** 2 - gLevel.MINES &&
         gGame.markedCount === gLevel.MINES
-    )
+    ) {
+        gGame.isOn = false
+        resetTimer()
+        setTimeout(saveScore, 10) // Delays saveScore() until the current call stack is cleared to ensure the DOM is fully rendered
+    }
 }
 
 function expandShown(board, rowIdx, colIdx) {
@@ -331,3 +339,20 @@ function findSafeCell() {
     const randIdx = getRandomInt(0, safeCells.length)
     return safeCells[randIdx]
 }
+
+function startTimer() {
+    const elTimer = document.querySelector('.timer span')
+    const startTime = new Date()
+
+    gTimerInterval = setInterval(() => {
+        const delta = Math.floor((Date.now() - startTime) / 1000)
+        gRoundTime = delta
+        elTimer.innerText = delta.toString().padStart(2, '0')
+    }, 1000)
+}
+
+function resetTimer(isReset) {
+    if (gTimerInterval) clearInterval(gTimerInterval)
+    if (isReset) document.querySelector('.timer span').innerText = '00'
+}
+

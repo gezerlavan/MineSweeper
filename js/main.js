@@ -14,6 +14,7 @@ var gBoard
 var gIsFirstClick
 var gIsHint
 var gTimerInterval
+var gRoundTime
 
 function onInit() {
     gGame = {
@@ -31,6 +32,8 @@ function onInit() {
     renderBoard(gBoard)
     renderHints()
     renderMarkCount()
+    renderScoreBoard()
+
     resetTimer(true)
 }
 
@@ -356,3 +359,38 @@ function resetTimer(isReset) {
     if (isReset) document.querySelector('.timer span').innerText = '00'
 }
 
+function saveScore() {
+    const scores = JSON.parse(localStorage.getItem('scores')) || []
+    const userName = prompt('Enter you name')
+    const userScore = {
+        name: userName || 'Guest',
+        time: gRoundTime,
+        date: Date.now(),
+    }
+    scores.push(userScore)
+    localStorage.setItem('scores', JSON.stringify(scores))
+
+    renderScoreBoard()
+}
+
+function renderScoreBoard() {
+    const scores = JSON.parse(localStorage.getItem('scores'))
+    if (!scores || !scores.length) return
+
+    var strHTML = '<ul>'
+
+    for (var i = 0; i < scores.length; i++) {
+        const score = scores[i]
+        const scoreDate = getFormattedDate(score.date)
+        const scoreTime = getFormattedTime(score.time)
+        strHTML += `<li>
+                        Name: ${score.name} - 
+                        Time: ${scoreTime} - 
+                        Date: ${scoreDate}
+                    </li>`
+    }
+    strHTML += '</ul>'
+
+    const elScoreBoard = document.querySelector('.score-baord')
+    elScoreBoard.innerHTML = strHTML
+}

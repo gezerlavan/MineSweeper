@@ -128,6 +128,7 @@ function handleMineClick(elCell) {
     if (gLevel.LIVES > 0) {
         gLevel.LIVES--
         setTimeout(() => {
+            if (!gGame.isOn) return
             elCell.innerText = ''
             elCell.classList.remove('shown')
         }, 1000)

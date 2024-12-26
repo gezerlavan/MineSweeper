@@ -4,6 +4,10 @@
     box-sizing: border-box;
 }
 
+:root {
+    color-scheme: light dark;
+}
+
 body {
     margin: 0;
     font-family: Arial, sans-serif;
@@ -26,7 +30,7 @@ table {
     margin-inline: auto;
     margin-block-start: 1rem;
     border-collapse: collapse;
-    
+
     background-color: #cc9277;
 }
 
@@ -38,6 +42,7 @@ td {
     width: 40px;
     height: 40px;
     border: 1px solid black;
+    color: black;
 
     cursor: default;
 }

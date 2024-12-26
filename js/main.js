@@ -15,6 +15,7 @@ var gIsFirstClick
 var gIsHint
 var gTimerInterval
 var gRoundTime
+var gManualMode
 
 function onInit() {
     gGame = {
@@ -25,8 +26,12 @@ function onInit() {
         hintCount: 3,
         safeClicks: 3,
     }
+    gManualMode = {
+        isOn: false,
+        minesToplace: gLevel.MINES,
+        elCells: [],
+    }
     gIsFirstClick = true
-    resetLives(gLevel.SIZE)
 
     gBoard = buildBoard()
     renderBoard(gBoard)
@@ -34,6 +39,7 @@ function onInit() {
     renderMarkCount()
     renderScoreBoard()
 
+    resetLives(gLevel.SIZE)
     resetTimer(true)
 }
 
@@ -98,12 +104,18 @@ function countMinesNegs(board, rowIdx, colIdx) {
 function onCellClicked(elCell, i, j) {
     const clickedCell = gBoard[i][j]
     if (!gGame.isOn || clickedCell.isShown || clickedCell.isMarked) return
-    if (gIsFirstClick) handleFirstClick(i, j)
+
+    if (gIsFirstClick && !gManualMode.isOn) handleFirstClick(i, j)
+    else if (gManualMode.isOn && gManualMode.minesToplace > 0) {
+        setMinesManually(elCell, i, j)
+        return
+    }
 
     if (gIsHint) {
         handleClickedCellHint(i, j)
         return
     }
+
     handleClickedCell(elCell, clickedCell, i, j)
     checkGameOver()
 }
@@ -142,7 +154,7 @@ function handleMineClick(elCell) {
 
 function handleFirstClick(rowIdx, colIdx) {
     gIsFirstClick = false
-    placeMinesRandomly(gBoard, rowIdx, colIdx)
+    if (gManualMode.minesToplace > 0) placeMinesRandomly(gBoard, rowIdx, colIdx)
     setMinesNegsCount(gBoard)
     startTimer()
 }
@@ -166,7 +178,7 @@ function handleClickedCellHint(rowIdx, colIdx) {
 function onCellMarked(ev, elCell, i, j) {
     ev.preventDefault()
     const clickedCell = gBoard[i][j]
-    if (!gGame.isOn || clickedCell.isShown) return
+    if (!gGame.isOn || clickedCell.isShown || gManualMode.isOn) return
 
     handleMarkedCell(elCell, clickedCell)
     renderMarkCount()
@@ -394,4 +406,28 @@ function renderScoreBoard() {
 
     const elScoreBoard = document.querySelector('.score-baord')
     elScoreBoard.innerHTML = strHTML
+}
+
+function onManualMode() {
+    onInit()
+    gManualMode.isOn = true
+}
+
+function setMinesManually(elCell, i, j) {
+    gBoard[i][j].isMine = true
+    gManualMode.minesToplace--
+
+    elCell.innerText = MINE
+    gManualMode.elCells.push(elCell)
+
+    if (gManualMode.minesToplace === 0) {
+        gManualMode.isOn = false
+        setTimeout(hideMines, 1000, gManualMode.elCells)
+    }
+}
+
+function hideMines(elCells) {
+    for (var i = 0; i < elCells.length; i++) {
+        elCells[i].innerText = ''
+    }
 }

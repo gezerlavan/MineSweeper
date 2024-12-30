@@ -12,21 +12,27 @@
 
         <main>
             <div class="levels"></div>
+
             <div class="features">
                 <div class="hints"></div>
                 <button onclick="onSafeClick()">Safe click</button>
                 <button onclick="onManualMode()">Manual mode</button>
+                <button onclick="onUndo()">Undo</button>
             </div>
+
             <section class="status-panel">
                 <div class="mark-count"><span></span></div>
                 <div class="timer"><span>00</span></div>
             </section>
+
             <table>
                 <tbody class="board"></tbody>
             </table>
+
             <div class="btn-restart-container">
                 <button onclick="onInit()">Restart</button>
             </div>
+
             <section class="score-baord"></section>
         </main>
 

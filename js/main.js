@@ -14,8 +14,9 @@ var gBoard
 var gIsFirstClick
 var gIsHint
 var gTimerInterval
-var gRoundTime
 var gManualMode
+var gPrevMoves
+var gPrevGameStates
 
 function onInit() {
     gGame = {
@@ -32,6 +33,9 @@ function onInit() {
         elCells: [],
     }
     gIsFirstClick = true
+    gIsHint = false
+    gPrevMoves = []
+    gPrevGameStates = []
 
     gBoard = buildBoard()
     renderBoard(gBoard)
@@ -66,9 +70,13 @@ function renderBoard(board) {
     for (var i = 0; i < board.length; i++) {
         strHTML += '<tr>'
         for (var j = 0; j < board[0].length; j++) {
-            strHTML += `<td onclick="onCellClicked(this, ${i}, ${j})"
+            var currCell = board[i][j]
+            var elCell = getCellContent(currCell)
+
+            strHTML += `<td class="${currCell.isShown ? 'shown' : ''}"
+                            onclick="onCellClicked(this, ${i}, ${j})"
                             oncontextmenu="onCellMarked(event, this, ${i}, ${j})"
-                            data-pos="${i},${j}"></td>`
+                            data-pos="${i},${j}">${elCell}</td>`
         }
         strHTML += '</tr>'
     }
@@ -77,10 +85,24 @@ function renderBoard(board) {
     elBoard.innerHTML = strHTML
 }
 
+function getCellContent(cell) {
+    var cellContent = ''
+    if (cell.isShown) {
+        if (cell.isMine) {
+            cellContent = MINE
+        } else if (cell.minesAroundCount > 0) {
+            cellContent = cell.minesAroundCount
+        }
+    } else if (cell.isMarked) {
+        cellContent = FLAG
+    }
+    return cellContent
+}
+
 function setMinesNegsCount(board) {
     for (var i = 0; i < board.length; i++) {
         for (var j = 0; j < board[0].length; j++) {
-            if (board[i][j] !== MINE) {
+            if (!board[i][j].isMine) {
                 board[i][j].minesAroundCount = countMinesNegs(board, i, j)
             }
         }
@@ -116,6 +138,8 @@ function onCellClicked(elCell, i, j) {
         return
     }
 
+    gPrevMoves.push(copyMat(gBoard))
+    gPrevGameStates.push({ ...gGame })
     handleClickedCell(elCell, clickedCell, i, j)
     checkGameOver()
 }
@@ -156,7 +180,7 @@ function handleFirstClick(rowIdx, colIdx) {
     gIsFirstClick = false
     if (gManualMode.minesToplace > 0) placeMinesRandomly(gBoard, rowIdx, colIdx)
     setMinesNegsCount(gBoard)
-    startTimer()
+    if (!gTimerInterval) startTimer()
 }
 
 function handleClickedCellHint(rowIdx, colIdx) {
@@ -179,7 +203,10 @@ function onCellMarked(ev, elCell, i, j) {
     ev.preventDefault()
     const clickedCell = gBoard[i][j]
     if (!gGame.isOn || clickedCell.isShown || gManualMode.isOn) return
+    if (gIsFirstClick && !gTimerInterval) startTimer()
 
+    gPrevMoves.push(copyMat(gBoard))
+    gPrevGameStates.push({ ...gGame })
     handleMarkedCell(elCell, clickedCell)
     renderMarkCount()
     checkGameOver()
@@ -234,7 +261,11 @@ function hideExpandedCells(cellsToHide) {
             )
             const { isShown, minesAroundCount, isMarked } =
                 cellsToHide[i].currCell
-            elCell.innerText = isShown ? minesAroundCount : isMarked ? FLAG : ''
+            elCell.innerText = isShown
+                ? minesAroundCount || ''
+                : isMarked
+                ? FLAG
+                : ''
             elCell.classList.remove('shown-hint')
         }
     }, 1500)
@@ -362,13 +393,14 @@ function startTimer() {
 
     gTimerInterval = setInterval(() => {
         const delta = Math.floor((Date.now() - startTime) / 1000)
-        gRoundTime = delta
+        gGame.secsPassed = delta
         elTimer.innerText = delta.toString().padStart(2, '0')
     }, 1000)
 }
 
 function resetTimer(isReset) {
     if (gTimerInterval) clearInterval(gTimerInterval)
+    gTimerInterval = null
     if (isReset) document.querySelector('.timer span').innerText = '00'
 }
 
@@ -377,7 +409,7 @@ function saveScore() {
     const userName = prompt('Enter you name')
     const userScore = {
         name: userName || 'Guest',
-        time: gRoundTime,
+        time: gGame.secsPassed,
         date: Date.now(),
     }
     scores.push(userScore)
@@ -431,3 +463,13 @@ function hideMines(elCells) {
         elCells[i].innerText = ''
     }
 }
+
+function onUndo() {
+    if (!gGame.isOn || !gPrevMoves.length) return
+    gBoard = gPrevMoves.pop()
+    gGame = gPrevGameStates.pop()
+
+    renderBoard(gBoard)
+    renderMarkCount()
+}
+

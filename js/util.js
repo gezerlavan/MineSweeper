@@ -12,6 +12,17 @@ function createMat(rows, cols) {
     return mat
 }
 
+function copyMat(mat) {
+    const copiedMat = []
+    for (let i = 0; i < mat.length; i++) {
+        copiedMat[i] = []
+        for (let j = 0; j < mat[0].length; j++) {
+            copiedMat[i][j] = { ...mat[i][j] }
+        }
+    }
+    return copiedMat
+}
+
 function getRandomInt(min, max) {
     const minCeiled = Math.ceil(min)
     const maxFloored = Math.floor(max)

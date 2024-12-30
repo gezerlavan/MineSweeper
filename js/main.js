@@ -18,6 +18,7 @@ var gManualMode
 var gPrevMoves
 var gPrevGameStates
 var gMegaHint
+var gIsMineExterminator
 
 function onInit() {
     gGame = {
@@ -41,6 +42,7 @@ function onInit() {
     }
     gPrevMoves = []
     gPrevGameStates = []
+    gIsMineExterminator = true
 
     gBoard = buildBoard()
     renderBoard(gBoard)
@@ -524,3 +526,31 @@ function resetClasses() {
     document.querySelector('.board').classList.remove('hint')
 }
 
+function onMineExterminator() {
+    if (!gIsMineExterminator) return
+    if (gIsFirstClick) return alert('You must start the game first!')
+    gIsMineExterminator = false
+
+    const minesToExterminate = gLevel.MINES === 2 ? 1 : 3
+    const mines = []
+
+    for (var i = 0; i < gBoard.length; i++) {
+        for (var j = 0; j < gBoard[0].length; j++) {
+            const currCell = gBoard[i][j]
+            if (currCell.isMine && !currCell.isShown && !currCell.isMarked)
+                mines.push({ i, j })
+        }
+    }
+
+    for (var m = 0; m < minesToExterminate; m++) {
+        if (!mines.length) return
+        const randIdx = getRandomInt(0, mines.length)
+        console.log('randIdx:', mines[randIdx])
+        gBoard[mines[randIdx].i][mines[randIdx].j].isMine = false
+        mines.splice(randIdx, 1)
+        gLevel.MINES--
+    }
+    setMinesNegsCount(gBoard)
+    renderBoard(gBoard)
+    renderMarkCount()
+}

@@ -17,6 +17,7 @@ var gTimerInterval
 var gManualMode
 var gPrevMoves
 var gPrevGameStates
+var gMegaHint
 
 function onInit() {
     gGame = {
@@ -34,6 +35,10 @@ function onInit() {
     }
     gIsFirstClick = true
     gIsHint = false
+    gMegaHint = {
+        isOn: false,
+        rangeCells: [],
+    }
     gPrevMoves = []
     gPrevGameStates = []
 
@@ -45,6 +50,7 @@ function onInit() {
 
     resetLives(gLevel.SIZE)
     resetTimer(true)
+    resetClasses()
 }
 
 function buildBoard() {
@@ -138,6 +144,11 @@ function onCellClicked(elCell, i, j) {
         return
     }
 
+    if (gMegaHint.isOn) {
+        handleClickedCellMegaHint(i, j)
+        return
+    }
+
     gPrevMoves.push(copyMat(gBoard))
     gPrevGameStates.push({ ...gGame })
     handleClickedCell(elCell, clickedCell, i, j)
@@ -197,6 +208,7 @@ function handleClickedCellHint(rowIdx, colIdx) {
     }
     hideExpandedCells(hintCells)
     gIsHint = false
+    document.querySelector('.board').classList.remove('hint')
 }
 
 function onCellMarked(ev, elCell, i, j) {
@@ -343,6 +355,7 @@ function onHint(elBtn) {
     gIsHint = true
     gGame.hintCount--
     elBtn.innerText = '🔒'
+    document.querySelector('.board').classList.add('hint')
 }
 
 function renderMarkCount() {
@@ -471,5 +484,43 @@ function onUndo() {
 
     renderBoard(gBoard)
     renderMarkCount()
+}
+
+function onMegaHint() {
+    gMegaHint.isOn = true
+    document.querySelector('.board').classList.add('hint')
+}
+
+function handleClickedCellMegaHint(i, j) {
+    gMegaHint.rangeCells.push({ i, j })
+    if (gMegaHint.rangeCells.length === 2) {
+        gMegaHint.isOn = false
+        revealMegaHint(gMegaHint.rangeCells)
+        document.querySelector('.board').classList.remove('hint')
+    }
+}
+
+function revealMegaHint(rangeCells) {
+    const hintCells = []
+    const [cellA, cellB] = rangeCells
+
+    const firstRowIdx = Math.min(cellA.i, cellB.i)
+    const firstColIdx = Math.min(cellA.j, cellB.j)
+
+    const lastRowIdx = Math.max(cellA.i, cellB.i)
+    const lastColIdx = Math.max(cellA.j, cellB.j)
+
+    for (var i = firstRowIdx; i < lastRowIdx + 1; i++) {
+        for (var j = firstColIdx; j < lastColIdx + 1; j++) {
+            const currCell = gBoard[i][j]
+            renderExpandedCells(currCell, i, j, true)
+            hintCells.push({ currCell, i, j })
+        }
+    }
+    hideExpandedCells(hintCells)
+}
+
+function resetClasses() {
+    document.querySelector('.board').classList.remove('hint')
 }
 

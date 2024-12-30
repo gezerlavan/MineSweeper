@@ -72,3 +72,7 @@ section.status-panel div {
 .hints {
     display: inline-block;
 }
+
+.hint td:hover {
+    background-color: lightpink;
+}
